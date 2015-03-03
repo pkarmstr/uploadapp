@@ -1,0 +1,15 @@
+<html>
+    <head>
+        <title>Your Data's Analytics</title>
+    </head>
+    <body>
+        <div>The top 5000 bigrams!!!</div>
+            <div class="container">
+            <ul>
+                {% for bigram in counts %}
+                <li>{{bigram}}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </body>
+</html>

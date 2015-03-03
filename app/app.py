@@ -8,6 +8,9 @@ import os
 # browser the file that the user just uploaded
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug import secure_filename
+import StringIO
+
+import nlp
 
 # Initialize the Flask application
 app = Flask(__name__)
@@ -41,11 +44,12 @@ def upload():
         filename = secure_filename(file.filename)
         # Move the file form the temporal folder to
         # the upload folder we setup
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         # Redirect the user to the uploaded_file route, which
         # will basicaly show on the browser the uploaded file
-        return redirect(url_for('uploaded_file',
-                                filename=filename))
+        app.fh = StringIO.StringIO(file.stream.read())
+        return redirect(url_for('display_stats'))#,
+                                #fh=file.stream))
 
 # This route is expecting a parameter containing the name
 # of a file. Then it will locate that file on the upload
@@ -53,8 +57,12 @@ def upload():
 # an image, that image is going to be show after the upload
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/stats')
+def display_stats():
+    bigram_counts = nlp.run(app.fh)
+    return render_template('stats.html', counts=map(lambda t: str(t[0]) + '\t' + str(t[1]), bigram_counts))
 
 if __name__ == '__main__':
     app.run(
